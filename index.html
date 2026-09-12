@@ -1462,6 +1462,7 @@
        否则 marked 会把 LaTeX 的 \ 行分隔吃成 \、把 _ 当斜体，
        KaTeX 必然解析失败。渲染仍交给 auto-render 统一处理。
        ============================================================ */
+    // [render-core:start]（node 回归测试提取此区间，勿插入 DOM 依赖代码）
     if (typeof marked !== 'undefined') {
       marked.use({
         extensions: [
@@ -1496,6 +1497,7 @@
       return DOMPurify.sanitize(html, { ADD_ATTR: ['target'] });
     }
 
+    // [render-core:end]
     const editor = document.getElementById('editor');
     const preview = document.getElementById('preview');
     const previewSource = document.getElementById('preview-source');

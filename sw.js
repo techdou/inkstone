@@ -1,5 +1,5 @@
 // Inkstone service worker: cache-first for offline editing
-const CACHE = 'inkstone-v1';
+const CACHE = 'inkstone-v2';  // bump on any index/i18n/vendor change (CI guards this)
 const ASSETS = [
   './', './index.html', './i18n.js', './manifest.json', './icon.svg',
   './vendor/marked.min.js', './vendor/katex.min.js', './vendor/auto-render.min.js',

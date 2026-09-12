@@ -49,6 +49,14 @@ try {
   if (m.name && m.start_url && m.icons) ok('manifest: valid'); else fail('manifest: missing fields');
 } catch (e) { fail('manifest: invalid JSON'); }
 
+// 4.5 render regression (math protection pipeline)
+try {
+  execFileSync(process.execPath, [path.join(__dirname, 'render-test.js')], { stdio: 'inherit' });
+  ok('render regression');
+} catch (e) {
+  fail('render regression failed');
+}
+
 // 5. no upstream promo leakage
 const promo = /lengcp2013|沃垠|Woyin AI|冷逸|Leng Yi of/;
 for (const f of ['index.html', 'i18n.js']) {

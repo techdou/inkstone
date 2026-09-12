@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/techdou/inkstone/actions/workflows/ci.yml/badge.svg)](https://github.com/techdou/inkstone/actions/workflows/ci.yml)
 
+**[在线试用 Live Demo →](https://techdou.github.io/inkstone/)** — 无需安装，打开即写。
+
 A **single-file Markdown editor** for the AI era — open `index.html` and start writing. No install, no account, no build step, fully offline.
 
 Built for people who write AGENTS.md, Skill.md, prompts, technical docs and paper notes: formulas, diagrams, outline navigation and one-key real save.
