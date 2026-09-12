@@ -1,0 +1,17 @@
+{
+  "name": "Inkstone Markdown Editor",
+  "short_name": "Inkstone",
+  "description": "Single-file style Markdown editor for AI-era writers. Offline, no account.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a1a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

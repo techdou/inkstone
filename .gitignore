@@ -1,0 +1,18 @@
+# 系统与编辑器杂项
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 日志与临时文件
+*.log
+tmp/
+.tmp/
+
+# 密钥与环境（永不入库）
+.env
+*.env
+!.env.example
+
+# Python 字节码
+__pycache__/
+*.pyc
