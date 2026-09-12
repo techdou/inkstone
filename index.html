@@ -1469,17 +1469,27 @@
             name: 'mathBlock', level: 'block',
             start(src) { const i = src.indexOf('$$'); return i < 0 ? undefined : i; },
             tokenizer(src) { const m = /^\$\$([\s\S]+?)\$\$/.exec(src); return m && { type: 'mathBlock', raw: m[0], text: m[1] }; },
-            renderer(t) { return '<div class="math-block">$$' + t.text + '$$</div>'; }
+            renderer(t) { return '<div class="math-block">$$' + escMath(t.text) + '$$</div>'; }
           },
           {
             name: 'mathInline', level: 'inline',
             start(src) { const i = src.indexOf('$'); return i < 0 ? undefined : i; },
-            tokenizer(src) { const m = /^\$([^$\n]+?)\$/.exec(src); return m && { type: 'mathInline', raw: m[0], text: m[1] }; },
-            renderer(t) { return '<span class="math-inline">$' + t.text + '$</span>'; }
+            tokenizer(src) {
+              // 内容首尾非空白、闭合 $ 后不跟数字——避免「价格 $5 折扣 $3」被误判为公式
+              const m = /^\$([^\s](?:[^$\n]*[^\s])?)\$(?!\d)/.exec(src);
+              return m && { type: 'mathInline', raw: m[0], text: m[1] };
+            },
+            renderer(t) { return '<span class="math-inline">$' + escMath(t.text) + '$</span>'; }
           }
         ]
       });
     }
+    // 公式文本转 HTML 实体：防止裸 < 破坏 DOM 结构；
+    // KaTeX auto-render 从 DOM 文本节点读取，实体已还原为原字符，不影响渲染
+    function escMath(t) {
+      return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
     // HTML 净化：防止恶意 Markdown（脚本注入）进入预览与导出产物
     function sanitizeHtml(html) {
       if (typeof DOMPurify === 'undefined') return html;
