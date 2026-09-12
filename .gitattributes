@@ -1,0 +1,19 @@
+# 统一行尾：CI 配置与脚本一律 LF（GitHub Actions 的 YAML 块标量对 CRLF 敏感）
+* text=auto
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.svg text eol=lf
+# 二进制
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.png binary
+*.jpg binary
+*.zip binary

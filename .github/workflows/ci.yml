@@ -15,7 +15,7 @@ jobs:
           node-version: 20
       - name: Run project checks
         run: node tools/check.js
-      - name: Guard: editor assets changed but sw.js cache version not bumped
+      - name: Guard - editor assets changed but sw.js cache version not bumped
         run: |
           CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E '^(index\.html|i18n\.js|vendor/)' || true)
           if [ -n "$CHANGED" ]; then
