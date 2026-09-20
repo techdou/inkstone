@@ -80,4 +80,4 @@ MIT — see [LICENSE](LICENSE).
 - Original project: [lengyi-markdown-editor](https://github.com/woyin2024/lengyi-markdown-editor) by 冷逸 / 沃垠AI (MIT)
 - Inkstone fork: rebranded, hardened rendering pipeline (math protection, sanitization), Mermaid 11, outline panel, real save, PWA — maintained by [TechDou](https://github.com/techdou)
 
-Libraries: [marked](https://github.com/markedjs/marked) · [KaTeX](https://katex.org/) · [Mermaid](https://mermaid.js.org/) · [DOMPurify](https://github.com/cure53/DOMPurify) · [dom-to-image](https://github.com/tsayen/dom-to-image)
+Libraries: [marked](https://github.com/markedjs/marked) · [KaTeX](https://katex.org/) · [Mermaid](https://mermaid.js.org/) · [DOMPurify](https://github.com/cure53/DOMPurify) · [highlight.js](https://highlightjs.org/) · [dom-to-image](https://github.com/tsayen/dom-to-image)

@@ -2039,8 +2039,9 @@ ${bodyHtml}
           'url(https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/fonts/');
         hljsCss = await (await fetch('vendor/highlight-github-dark.min.css')).text();
       } catch (e) {
-        // file:// 等场景 fetch 受限：回退为相对引用（文件与 inkstone 同目录时可用）
-        cssFallback = '<link rel="stylesheet" href="vendor/katex.min.css">';
+        // file:// 等场景 fetch 受限：回退为 CDN 绝对地址——不依赖导出文件与 inkstone 的相对位置
+        cssFallback = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">' +
+          '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">';
       }
 
       const innerBody = preview.querySelector('.markdown-body');
