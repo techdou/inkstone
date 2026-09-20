@@ -1061,6 +1061,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a1a1a">
   <link rel="stylesheet" href="vendor/katex.min.css">
+  <link rel="stylesheet" href="vendor/highlight-github-dark.min.css">
 </head>
 <body data-theme="light">
   <!-- SVG 图标精灵 -->
@@ -1455,6 +1456,7 @@
   <script src="vendor/katex.min.js"></script>
   <script src="vendor/auto-render.min.js"></script>
   <script src="vendor/mermaid.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
   <script src="i18n.js"></script>
   <script>
     /* ============================================================
@@ -1495,6 +1497,14 @@
     function sanitizeHtml(html) {
       if (typeof DOMPurify === 'undefined') return html;
       return DOMPurify.sanitize(html, { ADD_ATTR: ['target'] });
+    }
+
+    // HTML 块边界修复：CommonMark 规定块级 HTML 到下一个空行为止都属于 HTML 块,
+    // 「</div> 后紧跟正文」时后续 Markdown(加粗/列表/标题)不再解析、原样输出。
+    // 讲义配图写法(居中 div 包 img)后接正文是常态——统一补一个空行隔开。
+    function fixHtmlBlockBoundary(text) {
+      return text.replace(/<\/(div|p|section|figure|table|ul|ol)>\s*(?=[^\s<])/g,
+        (m) => m.replace(/\s+$/, '\n\n'));
     }
 
     // [render-core:end]
@@ -1794,7 +1804,7 @@
 
       let html = '';
       if (typeof marked !== 'undefined') {
-        html = marked.parse(text);
+        html = marked.parse(fixHtmlBlockBoundary(text));
       } else {
         html = '<pre style="white-space:pre-wrap">' + escapeHtml(text) + '</pre>';
       }
@@ -1802,6 +1812,7 @@
 
       preview.innerHTML = '<div class="markdown-body">' + sanitizeHtml(html) + '</div>';
       styleTaskLists();
+      highlightCodeBlocks();
 
       if (typeof renderMathInElement !== 'undefined') {
         renderMathInElement(preview, {
@@ -1856,6 +1867,18 @@
         li.classList.add('task-item');
         const ul = li.closest('ul, ol');
         if (ul && ul.tagName === 'UL') ul.classList.add('task-list');
+      });
+    }
+
+    // 代码高亮：marked 输出后逐块上色（mermaid 块交给图表渲染器，跳过）
+    function highlightCodeBlocks() {
+      if (typeof hljs === 'undefined') return;
+      preview.querySelectorAll('pre code').forEach(code => {
+        if (code.classList.contains('language-mermaid')) return;
+        if (code.dataset.hlDone) return; // 高亮幂等：已上色的块不再重复处理
+        code.dataset.hlDone = '1';
+        code.removeAttribute('data-highlighted');
+        try { hljs.highlightElement(code); } catch (e) { /* 未知语言等异常不阻断渲染 */ }
       });
     }
 
@@ -1997,19 +2020,31 @@ ${bodyHtml}
       showToast(t('toastWordExported'));
     }
 
-    // 导出 HTML：将 Markdown 渲染为独立 HTML 页面并下载
-    function exportHTML() {
+    // 导出 HTML：单文件 standalone——直接携带当前已渲染的预览 DOM
+    // （公式/图表/高亮均为终态 HTML），样式全部内联；
+    // KaTeX 字体改为 CDN 绝对地址：联网时公式最精细，离线时系统字体兜底
+    async function exportHTML() {
       let name = filenameInput.value.trim();
       if (!name) name = '未命名文档.md';
       name = name.replace(/\.md$/i, '').replace(/\.markdown$/i, '') + '.html';
 
-      const md = editor.value;
-      let bodyHtml;
-      if (typeof marked !== 'undefined') {
-        bodyHtml = sanitizeHtml(marked.parse(md));
-      } else {
-        bodyHtml = '<pre style="white-space:pre-wrap">' + escapeHtml(md) + '</pre>';
+      if (previewMode !== 'preview') setPreviewMode('preview');
+      updatePreview();
+
+      let katexCss = '', hljsCss = '';
+      let cssFallback = '';
+      try {
+        katexCss = await (await fetch('vendor/katex.min.css')).text();
+        katexCss = katexCss.replace(/url\(fonts\//g,
+          'url(https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/fonts/');
+        hljsCss = await (await fetch('vendor/highlight-github-dark.min.css')).text();
+      } catch (e) {
+        // file:// 等场景 fetch 受限：回退为相对引用（文件与 inkstone 同目录时可用）
+        cssFallback = '<link rel="stylesheet" href="vendor/katex.min.css">';
       }
+
+      const innerBody = preview.querySelector('.markdown-body');
+      const bodyHtml = innerBody ? innerBody.outerHTML : '';
 
       const fullHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -2017,7 +2052,9 @@ ${bodyHtml}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(name.replace(/\.html$/i, ''))}</title>
-  <link rel="stylesheet" href="vendor/katex.min.css">
+  ${cssFallback}
+  <style>${katexCss}</style>
+  <style>${hljsCss}</style>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 16px; line-height: 1.7; max-width: 820px; margin: 40px auto; padding: 0 20px; color: #212529; background: #fff; }
     h1, h2, h3, h4, h5, h6 { margin: 24px 0 12px; font-weight: 600; line-height: 1.25; color: #212529; }
@@ -2032,8 +2069,8 @@ ${bodyHtml}
     li.task-item { list-style: none; margin-left: -1.4em; }
     ul.task-list { padding-left: 1.8em; }
     code { background: #f1f3f5; padding: 2px 6px; border-radius: 4px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.9em; }
-    pre { background: #f1f3f5; padding: 14px; border-radius: 8px; overflow-x: auto; margin: 0 0 14px; }
-    pre code { background: transparent; padding: 0; font-size: 0.9em; }
+    pre { background: #0d1117; color: #e6edf3; padding: 14px 16px; border-radius: 8px; overflow-x: auto; margin: 0 0 14px; }
+    pre code { background: transparent; padding: 0; font-size: 0.9em; color: inherit; }
     blockquote { margin: 0 0 14px; padding: 8px 16px; border-left: 4px solid #8a93a1; background: #f1f3f5; color: #6c757d; font-size: 0.95em; }
     table { border-collapse: collapse; width: 100%; margin-bottom: 14px; }
     th, td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
@@ -2041,26 +2078,16 @@ ${bodyHtml}
     img { max-width: 100%; height: auto; border-radius: 6px; }
     hr { border: none; border-top: 1px solid #dee2e6; margin: 20px 0; }
     .katex { font-size: 1.1em; }
-    .katex-display { margin: 16px 0; overflow-x: auto; }
+    .katex-display, .math-block { margin: 16px 0; overflow-x: auto; }
+    .mermaid { margin: 0 0 16px; text-align: center; }
+    .mermaid svg { max-width: 100%; height: auto; }
+    .frontmatter { border: 1px solid #e0e0e0; border-radius: 8px; margin: 0 0 16px; background: #fafafa; font-size: 13px; }
+    .frontmatter summary { padding: 6px 12px; cursor: pointer; color: #888; font-family: ui-monospace, monospace; }
+    .frontmatter pre { margin: 0; padding: 8px 12px; background: transparent; font-size: 12.5px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
 ${bodyHtml}
-<script src="vendor/katex.min.js">${'</scr' + 'ipt>'}
-<script src="vendor/auto-render.min.js">${'</scr' + 'ipt>'}
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    if (typeof renderMathInElement !== 'undefined') {
-      renderMathInElement(document.body, {
-        delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '$', right: '$', display: false }
-        ],
-        throwOnError: false
-      });
-    }
-  });
-${'</scr' + 'ipt>'}
 </body>
 </html>`;
 
@@ -3382,6 +3409,22 @@ ${'</scr' + 'ipt>'}
     // 全屏状态监听
     document.addEventListener('fullscreenchange', onFullscreenChange);
     document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+    // ════════════════ 图片灯箱：预览区点图放大 ════════════════
+    const lightbox = document.createElement('div');
+    lightbox.style.cssText = 'position:fixed;inset:0;background:rgba(11,13,18,.88);display:none;align-items:center;justify-content:center;z-index:400;cursor:zoom-out;';
+    lightbox.innerHTML = '<img alt="" style="max-width:92%;max-height:92%;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5);">';
+    document.body.appendChild(lightbox);
+    lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && lightbox.style.display === 'flex') lightbox.style.display = 'none';
+    });
+    preview.addEventListener('click', e => {
+      const img = e.target && e.target.closest ? e.target.closest('img') : null;
+      if (!img) return;
+      lightbox.querySelector('img').src = img.src;
+      lightbox.style.display = 'flex';
+    });
 
     // PWA：注册 Service Worker（离线可用）
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {

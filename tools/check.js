@@ -13,14 +13,15 @@ const ok = msg => console.log('PASS:', msg);
 const required = ['index.html', 'i18n.js', 'manifest.json', 'sw.js', 'icon.svg', 'LICENSE', 'README.md',
   'vendor/marked.min.js', 'vendor/katex.min.js', 'vendor/auto-render.min.js',
   'vendor/mermaid.min.js', 'vendor/dom-to-image-more.min.js', 'vendor/purify.min.js',
-  'vendor/katex.min.css'];
+  'vendor/katex.min.css',
+  'vendor/highlight.min.js', 'vendor/highlight-github-dark.min.css'];
 for (const f of required) {
   if (fs.existsSync(path.join(root, f))) ok('exists: ' + f);
   else fail('missing: ' + f);
 }
 
 // 2. size budget
-const budget = [['index.html', 200 * 1024], ['vendor/mermaid.min.js', 5 * 1024 * 1024], ['vendor/katex.min.js', 400 * 1024]];
+const budget = [['index.html', 200 * 1024], ['vendor/mermaid.min.js', 5 * 1024 * 1024], ['vendor/katex.min.js', 400 * 1024], ['vendor/highlight.min.js', 200 * 1024]];
 for (const [f, limit] of budget) {
   const p = path.join(root, f);
   if (!fs.existsSync(p)) continue;

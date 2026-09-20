@@ -14,7 +14,7 @@ const core = m[1];
 // 2. 在受控作用域里执行（marked 来自本地 vendor，无 DOM 依赖）
 const marked = require('../vendor/marked.min.js');
 const scope = { marked, result: null };
-new Function('marked', 'window', core + '\nthis.__ink = { marked };').call(scope, marked, {});
+new Function('marked', 'window', core + '\nthis.__ink = { marked, fixHtmlBlockBoundary: (typeof fixHtmlBlockBoundary === "function" ? fixHtmlBlockBoundary : null) };').call(scope, marked, {});
 
 const escMath = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // 区间里定义了同名函数，重新绑定到本作用域以便断言直接调用
@@ -52,6 +52,20 @@ check('行内公式 < 转义', h5.includes('&lt;') && !/<b\$/.test(h5));
 // 用例 6：$ 转义形态 \$ 不触发公式
 const h6 = marked.parse('花费 \\$5 和 \\$6');
 check('\\$ 转义不触发公式', !h6.includes('math-inline'));
+
+// 用例 7：HTML 块边界修复——</div> 后紧跟加粗文字，补空行后 marked 才能解析 strong
+const fixFn = scope.__ink && scope.__ink.fixHtmlBlockBoundary;
+if (typeof fixFn !== 'function') {
+  check('html-boundary 函数已暴露', false);
+} else {
+  const fixed = fixFn('<div align="center"><img src="a.png" /></div>\n**加粗正文**');
+  check('html-boundary 补出空行', fixed.includes('</div>\n\n**加粗正文**'));
+  check('html-boundary 已有空行不重复', fixFn('</div>\n\n已有空行') === '</div>\n\n已有空行');
+  const rendered = marked.parse(fixFn('<div align="center"><img src="a.png" /></div>\n**加粗正文**'));
+  check('html-boundary 后 strong 正常渲染', rendered.includes('<strong>加粗正文</strong>'));
+  const noFix = marked.parse('<div align="center"><img src="a.png" /></div>\n**加粗正文**');
+  check('未修复时 strong 确实丢失（回归意义自证）', !noFix.includes('<strong>加粗正文</strong>'));
+}
 
 if (failed) {
   console.error(`\n${failed} 个用例失败`);

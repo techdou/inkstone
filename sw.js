@@ -1,10 +1,11 @@
 // Inkstone service worker: cache-first for offline editing
-const CACHE = 'inkstone-v2';  // bump on any index/i18n/vendor change (CI guards this)
+const CACHE = 'inkstone-v3';  // bump on any index/i18n/vendor change (CI guards this)
 const ASSETS = [
   './', './index.html', './i18n.js', './manifest.json', './icon.svg',
   './vendor/marked.min.js', './vendor/katex.min.js', './vendor/auto-render.min.js',
   './vendor/mermaid.min.js', './vendor/dom-to-image-more.min.js',
-  './vendor/purify.min.js', './vendor/fonts/KaTeX_Main-Regular.woff2',
+  './vendor/purify.min.js', './vendor/highlight.min.js',
+  './vendor/highlight-github-dark.min.css', './vendor/fonts/KaTeX_Main-Regular.woff2',
   './vendor/fonts/KaTeX_Math-Italic.woff2', './vendor/fonts/KaTeX_Size1-Regular.woff2',
   './vendor/fonts/KaTeX_Size2-Regular.woff2', './vendor/fonts/KaTeX_AMS-Regular.woff2'
 ];

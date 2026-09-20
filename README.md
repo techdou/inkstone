@@ -14,12 +14,15 @@ Built for people who write AGENTS.md, Skill.md, prompts, technical docs and pape
 
 - **Open-and-go**: one HTML file + local vendor libraries, zero CDN dependency, works from `file://`
 - **Live preview**: split view with ratio-draggable panes, synchronized scrolling, edit/preview/fullscreen layouts
+- **Syntax highlighting**: highlight.js (github-dark tokens on a deep code ground), applied to preview, exports and PNG
 - **Math**: KaTeX (`$...$` inline, `$$...$$` display) with formulas protected from the Markdown pipeline — multi-line `array`/`cases` render correctly; failures show a wavy-underline hint with tooltip
 - **Diagrams**: Mermaid 11, with per-block error cards when the syntax is wrong
 - **Outline panel**: auto-generated heading tree, click to jump
 - **Real save**: File System Access API writes back to the original file on Ctrl+S (with graceful fallback to download on older browsers)
 - **YAML frontmatter**: rendered as a collapsible meta card
-- **Export**: MD / standalone HTML / Word (doc) / PDF (print) / long PNG with social ratios
+- **Export**: MD / standalone HTML (inlined styles + rendered DOM — works anywhere, no vendor paths) / Word (doc) / PDF (print) / long PNG with social ratios
+- **Image lightbox**: click any image in the preview to inspect it full-screen (Esc to close)
+- **HTML block boundary fix**: `</div>` followed by body text no longer swallows the following Markdown (bold/lists render as expected)
 - **Safe output**: all rendered and exported HTML is sanitized with DOMPurify
 - **PWA**: installable, offline via service worker
 - **Editor comforts**: syntax-ish toolbar, 8×8 table picker, find & replace, drag-and-drop open, word count, dark/light theme, 10 languages, autosave to localStorage, undo/redo
@@ -55,7 +58,7 @@ inkstone/
 ├── manifest.json       # PWA manifest
 ├── sw.js               # service worker (offline cache)
 ├── icon.svg
-├── vendor/             # marked 15 · KaTeX · Mermaid 11 · DOMPurify · dom-to-image (all local)
+├── vendor/             # marked 15 · KaTeX · Mermaid 11 · highlight.js · DOMPurify · dom-to-image (all local)
 ├── tools/check.js      # CI checks: syntax / assets / size budget
 └── web-to-md-proxy.py  # optional local proxy for web-to-markdown
 ```
